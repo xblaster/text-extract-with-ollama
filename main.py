@@ -34,9 +34,6 @@ def get_information_from_pdf(pdf_content):
     ],
     )
 
-
-
-
 def get_pdf_files(directory):
     """
     Returns a list of PDF files in the specified directory.
@@ -51,7 +48,7 @@ def get_pdf_files(directory):
 
 def extract_text_from_pdfs(directory):
     """
-    Extracts text from all PDF files in the specified directory.
+    Extracts text from all PDF files in the specified directory and uses LLaMA to get information.
     
     Args:
         directory (str): The path to the directory containing PDFs.
@@ -65,6 +62,7 @@ def extract_text_from_pdfs(directory):
                 text += pdf_reader.getPage(page).extractText()
             print(f"Extracted text from {file}:")
             print(text)
+            get_information_from_pdf(text)
 
 def main():
     """
