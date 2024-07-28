@@ -4,3 +4,4 @@ PyMuPDF==1.21.0
 argparse==1.4.0
 xlsxwriter==1.4.5
 ollama==0.1.2
+python-docx==0.8.10
