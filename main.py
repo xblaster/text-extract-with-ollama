@@ -83,15 +83,16 @@ def extract_text_from_docx(directory):
     Args:
         directory (str): The path to the directory containing docx files.
     """
-    docx_files = [f for f in os.listdir(directory) if f.endswith('.docx')]
+    docx_files = [f for f in os.walk(directory)][0][2]  # Modified line
     for file in docx_files:
-        doc = docx.Document(os.path.join(directory, file))
-        text = ''
-        for para in doc.paragraphs:
-            text += para.text + '\n'
-        print(f"Extracted text from {file}:")
-        print(text)
-        print(get_information_from_docx(text))
+        if file.endswith('.docx'):
+            doc = docx.Document(os.path.join(directory, file))
+            text = ''
+            for para in doc.paragraphs:
+                text += para.text + '\n'
+            print(f"Extracted text from {file}:")
+            print(text)
+            print(get_information_from_docx(text))
 
 def main():
     """
