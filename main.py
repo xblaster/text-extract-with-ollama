@@ -7,6 +7,7 @@ import argparse
 import ollama
 
 def get_information_from_pdf(pdf_content):
+    # This function uses the LLaMA model to extract information from a PDF.
     response = ollama.chat(
         model='llama3.1',
         messages=[{'role': 'user', 'content': 
