@@ -57,7 +57,7 @@ def get_information_from_docx(docx_content):
             'required': ['name'],
             },
         },
-        },
+        }],
     ),
     return response
 
@@ -89,6 +89,7 @@ def extract_text_from_pdfs(directory):
                 text += pdf_reader.getPage(page).extractText()
             print(f"Extracted text from {file}:")
             print(text)
+            
 
 def extract_text_from_docx(directory):
     """
@@ -105,6 +106,7 @@ def extract_text_from_docx(directory):
             text += para.text + '\n'
         print(f"Extracted text from {file}:")
         print(text)
+        print(get_information_from_docx(text))
 
 def main():
     """
