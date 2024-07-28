@@ -3,6 +3,7 @@ import sys
 from PyPDF2 import PdfFileReader
 from pdfplumber import pdf
 import argparse
+import docx
 
 import ollama
 
@@ -33,6 +34,33 @@ def get_information_from_pdf(pdf_content):
     ],
     )
 
+def get_information_from_docx(docx_content):
+    response = ollama.chat(
+        model='llama3.1',
+        messages=[{'role': 'user', 'content': 
+            'Quels sont les informations dans ce document ? Nom, adresse, prix'}],
+
+        # provide a push docx
+        tools=[{
+        'type': 'function',
+        'function': {
+            'name': 'push_docx_info',
+            'description': 'push docx information',
+            'parameters': {
+            'type': 'object',
+            'properties': {
+                'name': {
+                'type': 'string',
+                'description': 'The name of the bill',
+                },
+            },
+            'required': ['name'],
+            },
+        },
+        },
+    ),
+    return response
+
 def get_pdf_files(directory):
     """
     Returns a list of PDF files in the specified directory.
@@ -62,6 +90,22 @@ def extract_text_from_pdfs(directory):
             print(f"Extracted text from {file}:")
             print(text)
 
+def extract_text_from_docx(directory):
+    """
+    Extracts text from all docx files in the specified directory.
+    
+    Args:
+        directory (str): The path to the directory containing docx files.
+    """
+    docx_files = [f for f in os.listdir(directory) if f.endswith('.docx')]
+    for file in docx_files:
+        doc = docx.Document(os.path.join(directory, file))
+        text = ''
+        for para in doc.paragraphs:
+            text += para.text + '\n'
+        print(f"Extracted text from {file}:")
+        print(text)
+
 def main():
     """
     The entry point of the script.
@@ -73,11 +117,12 @@ def main():
         None
     """
     # Reverted change: Removed the --help check
-    parser = argparse.ArgumentParser(description='Extract text from PDFs')
-    parser.add_argument('--directory', required=True, help='Directory containing PDFs')
+    parser = argparse.ArgumentParser(description='Extract text from PDFs and docx')
+    parser.add_argument('--directory', required=True, help='Directory containing PDFs and docx files')
     args = parser.parse_args()
 
     extract_text_from_pdfs(args.directory)
+    extract_text_from_docx(args.directory)
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
