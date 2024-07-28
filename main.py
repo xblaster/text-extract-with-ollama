@@ -5,6 +5,7 @@ from pdfplumber import pdf
 import argparse
 
 import ollama
+from create_excel_file import push_excel_file, create_excel_file
 
 def get_information_from_pdf(pdf_content):
     # This function uses the LLaMA model to extract information from a PDF.
@@ -80,6 +81,9 @@ def main():
     args = parser.parse_args()
 
     extract_text_from_pdfs(args.directory)
+    
+    push_excel_file()
+    create_excel_file()
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
