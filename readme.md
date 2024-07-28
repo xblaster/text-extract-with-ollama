@@ -1,7 +1,7 @@
 # Extract Text from PDFs using LLaMA
 
-This program extracts text from PDF files and uses the LLaMA model to get information.
-It was created with the help of the tool "aider" and is now more user-friendly.
+This program extracts text from PDF files and uses the LLaMA3.1 model to get information.
+It was created with the help of the tool "aider".
 
 ## Usage
 
@@ -24,5 +24,3 @@ To use this program, simply run it in your terminal or command prompt. You can a
 1. Clone this repository using `git clone`
 2. Install required dependencies using `pip install -r requirements.txt`
 3. Run the program using `python main.py`
-
-Note: This is just an example of how you can improve the readme file. You may want to add or remove sections depending on your specific project.
