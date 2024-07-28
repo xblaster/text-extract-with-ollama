@@ -1,4 +1,5 @@
 import os
+import sys
 from PyPDF2 import PdfFileReader
 from pdfplumber import pdf
 
@@ -17,5 +18,9 @@ def extract_text_from_pdfs(directory):
             print(text)
 
 if __name__ == '__main__':
-    directory = '/path/to/your/directory'
+    if len(sys.argv) != 2:
+        print("Usage: python main.py <directory>")
+        sys.exit(1)
+    
+    directory = sys.argv[1]
     extract_text_from_pdfs(directory)
