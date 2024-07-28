@@ -23,6 +23,10 @@ def main():
     parser.add_argument('--directory', required=True, help='Directory containing PDFs')
     args = parser.parse_args()
 
+    if args.directory == '--help':
+        print("Usage: python main.py --directory <path_to_directory>")
+        sys.exit(1)
+
     extract_text_from_pdfs(args.directory)
 
 if __name__ == '__main__':
