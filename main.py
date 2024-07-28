@@ -2,6 +2,7 @@ import os
 import sys
 from PyPDF2 import PdfFileReader
 from pdfplumber import pdf
+import argparse
 
 def get_pdf_files(directory):
     return [f for f in os.listdir(directory) if f.endswith('.pdf')]
@@ -17,10 +18,16 @@ def extract_text_from_pdfs(directory):
             print(f"Extracted text from {file}:")
             print(text)
 
+def main():
+    parser = argparse.ArgumentParser(description='Extract text from PDFs')
+    parser.add_argument('--directory', required=True, help='Directory containing PDFs')
+    args = parser.parse_args()
+
+    extract_text_from_pdfs(args.directory)
+
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: python main.py <directory>")
+    if len(sys.argv) == 1:
+        print("Usage: python main.py --help")
         sys.exit(1)
     
-    directory = sys.argv[1]
-    extract_text_from_pdfs(directory)
+    main()
