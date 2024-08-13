@@ -13,7 +13,40 @@ import argparse
 import ollama
 import pandas as pd
 
-def get_information_from_pdf(pdf_content, pdf_name):
+def push_csv_info(number, name, price, date, csv_file='output.csv'):
+    """
+    Pushes the provided information into a CSV file.
+
+    Args:
+        number (str): The name of the bill.
+        name (str): The address mentioned in the document.
+        price (str): The price or cost mentioned in the document.
+        date (str): The date
+        csv_file (str): The path to the CSV file. Default is 'output.csv'.
+    """
+
+    # Prepare the data as a dictionary
+    data = {
+        'number': number,
+        'name': name,
+        'price': price,
+        'date': date
+    }
+
+    # Convert the dictionary to a DataFrame
+    df = pd.DataFrame([data])
+
+    # Check if the CSV file exists
+    if not os.path.isfile(csv_file):
+        # If the file does not exist, write the DataFrame with headers
+        df.to_csv(csv_file, index=False)
+    else:
+        # If the file exists, append the DataFrame without headers
+        df.to_csv(csv_file, mode='a', header=False, index=False)
+
+    print(f"Information pushed to {csv_file}" + str(data))
+
+def get_information_from_pdf(pdf_content, csv_file):
     """
     Sends the PDF content to the LLaMA model and returns the extracted information.
 
@@ -26,44 +59,53 @@ def get_information_from_pdf(pdf_content, pdf_name):
     """
     response = ollama.chat(
         model='llama3.1',
-        messages=[{'role': 'user', 'content': 'Extract information from this document: ' + pdf_content}],
+        messages=[{'role': 'user', 'content': 'Extract information from this document and push it into csv file. The emitter is Pauline Oltmanns . Think step by step to achieve the goal\n\n ### content ### \n:' + pdf_content}],
         tools=[{
             'type': 'function',
             'function': {
-                'name': 'push_docx_info',
-                'description': 'push docx information',
+                'name': 'push_csv_info',
+                'description': 'push csv information',
                 'parameters': {
                     'type': 'object',
                     'properties': {
+                        'number': {
+                            'type': 'string',
+                            'description': 'The bill number. Example: 2024-08-01-01',
+                        },
                         'name': {
                             'type': 'string',
-                            'description': 'The name of the bill',
-                        },
-                        'address': {
-                            'type': 'string',
-                            'description': 'The address mentioned in the document',
+                            'description': 'The name of the person who receive the bill. Usually before "A yutz". Can\'t be Pauline Oltmanns, she\'s the specialist emitter. Example : Martin Dupond',
                         },
                         'price': {
                             'type': 'string',
-                            'description': 'The price or cost mentioned in the document',
+                            'description': 'The price or cost mentioned in the document. Example: 20€',
+                        },
+                        'date': {
+                            'type': 'string',
+                            'description': 'The date mentioned in the document: Exemple: 21/02/2021',
                         }
                     },
-                    'required': ['name', 'address', 'price'],
+                    'required': ['number', 'name', 'price', 'date'],
                 },
             },
         }],
     )
+
+    # Check if the model decided to use the provided function
+    if not response['message'].get('tool_calls'):
+        print("The model didn't use the function. Its response was:")
+        print(response['message']['content'])
+        return
     
-    # Assuming the response is in a format that can be directly used
-    # Adjust this according to how the response is actually structured
-    extracted_info = {
-        'pdf_name': pdf_name,
-        'name': response.get('name', 'N/A'),
-        'address': response.get('address', 'N/A'),
-        'price': response.get('price', 'N/A')
-    }
-    
-    return extracted_info
+    # Process function calls made by the model
+    if response['message'].get('tool_calls'):
+        available_functions = {
+        'push_csv_info': push_csv_info,
+        }
+        for tool in response['message']['tool_calls']:
+            function_to_call = available_functions[tool['function']['name']]
+            function_response = function_to_call(tool['function']['arguments']['number'], tool['function']['arguments']['name'], tool['function']['arguments']['price'], tool['function']['arguments']['date'], csv_file)
+
 
 def extract_text_from_pdfs(directory, output_csv):
     """
@@ -83,7 +125,7 @@ def extract_text_from_pdfs(directory, output_csv):
             for page in range(len(pdf_reader.pages)):
                 text += pdf_reader.pages[page].extract_text()
 
-            extracted_info = get_information_from_pdf(text, os.path.basename(file))
+            extracted_info = get_information_from_pdf(text, output_csv)
             extracted_data.append(extracted_info)
 
     # Convert the extracted data to a DataFrame and save it to a CSV file
