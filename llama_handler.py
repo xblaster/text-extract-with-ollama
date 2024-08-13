@@ -16,11 +16,11 @@ def validate_name(name):
     Raises:
         ValueError: If the name is forbidden.
     """
-    forbidden_names = ["Pauline Oltmanns"]
+    forbidden_names = ["Pauline Oltmanns", "Pauline OLTMANNS", "PAULINE OLTMANNS", ".", "A Yutz", "Yutz"]
     if any(forbidden_name in name for forbidden_name in forbidden_names):
         raise ValueError(f"Invalid name found: {name}")
 
-def get_information_from_pdf(pdf_content, csv_file, name, max_retries=3):
+def get_information_from_pdf(pdf_content, csv_file, name, file, max_retries=3):
     """
     Sends the PDF content to the LLaMA model and returns the extracted information with retries in case of errors.
 
@@ -36,7 +36,7 @@ def get_information_from_pdf(pdf_content, csv_file, name, max_retries=3):
         try:
             response = ollama.chat(
                 model='llama3.1',
-                messages=[{'role': 'user', 'content': f'Extract information from this document and push it into csv file. The emitter is "Pauline Oltmanns". Think step by step to achieve the goal.\n\n### content ###\n:' + pdf_content}],
+                messages=[{'role': 'user', 'content': f'Extract information from this document and push it into csv file. The emitter is Pauline OLTMANNS. Think step by step to achieve the goal.\n\n### content ###\n:' + pdf_content}],
                 tools=[{
                     'type': 'function',
                     'function': {
@@ -76,13 +76,22 @@ def get_information_from_pdf(pdf_content, csv_file, name, max_retries=3):
             for tool in response['message']['tool_calls']:
                 arguments = tool['function']['arguments']
 
-                validate_name(arguments.get('name', 'Unknown Name'))
+                # Validate the presence of required fields
+                if 'number' not in arguments or 'name' not in arguments or 'price' not in arguments or 'date' not in arguments:
+                    missing_fields = [field for field in ['number', 'name', 'price', 'date'] if field not in arguments]
+                    logging.error(f"Missing fields in response: {missing_fields}")
+                    raise KeyError(f"Missing required fields: {missing_fields}")
 
+                # Validate the name to ensure it's not forbidden
+                validate_name(arguments['name'])
+
+                # Push information to the CSV
                 push_csv_info(
                     arguments.get('number', 'Unknown Number'),
                     arguments.get('name', 'Unknown Name'),
                     arguments.get('price', 'Unknown Price'),
                     arguments.get('date', 'Unknown Date'),
+                    file, 
                     csv_file
                 )
             break  # Exit loop if successful
