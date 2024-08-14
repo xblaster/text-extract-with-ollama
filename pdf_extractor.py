@@ -1,6 +1,7 @@
 import os
 from PyPDF2 import PdfReader
 from llama_handler import get_information_from_pdf
+from csv_handler import check_if_already_analyzed
 
 def extract_text_from_pdfs(directory, output_csv, name= ""):
     """
@@ -15,6 +16,10 @@ def extract_text_from_pdfs(directory, output_csv, name= ""):
     pdf_files = find_pdf_files(directory)
 
     for file in pdf_files:
+        if check_if_already_analyzed(file, output_csv):
+            print(f"Skipping {file}, already analyzed.")
+            continue
+        
         with open(file, 'rb') as f:
             pdf_reader = PdfReader(f)
             text = ''
